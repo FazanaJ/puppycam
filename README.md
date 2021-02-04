@@ -1,10 +1,10 @@
-# Puppycam for SM64
+# Ultra Puppycam for SM64
 
-Puppycam is a brand new camera mode for SM64, designed from the ground up, to improve and fix all of the existing flaws with the horribly dated camera, that comes with the original game.
+Ultra Puppycam is a brand new camera mode for SM64, designed from the ground up, to improve and fix all of the existing flaws with the horribly dated camera, that comes with the original game. It is based on the original [Puppycam](https://github.com/FazanaJ/puppycam), with improvements and updates by several community members.
 
 # Usage
 
-You will want to use [this repo as a base](https://github.com/sm64-port/sm64-port) and then apply the patch in WSL. Simply copy puppycam.patch to the enhancements folder, then in the root directory of your repo, run "tools/apply_patch.sh enhancements/puppycam.patch" To revert, type "tools/revert_patch.sh enhancements/puppycam.patch" instead. This repo still supports everything necessary to develop for N64, so there's absolutely nothing lost abandoning the old one, going forward.
+You will want to use [this repo (UltraSM64 for Refresh 13) as a base](https://github.com/CrashOveride95/ultrasm64) and then apply the patch in WSL. Simply copy ultrapuppycam.patch to the enhancements folder, then in the root directory of your repo, run "tools/apply_patch.sh enhancements/ultrapuppycam.patch" To revert, type "tools/revert_patch.sh enhancements/ultrapuppycam.patch" instead. It should theoretically work with [the vanilla decompilation repo](https://github.com/n64decomp/sm64), but going forward we'll be prioritizing UltraSM64 for compatibility with the extra features it provides.
 
 # Features:
 
@@ -20,8 +20,14 @@ You will want to use [this repo as a base](https://github.com/sm64-port/sm64-por
 
 # Credits:
 
-- Me, I made the thing, lmao
+- [Fazana](https://github.com/FazanaJ) for creating the original Puppycam and the majority of this version's code
 - [CuckyDev](https://github.com/cuckydev) for making the raycasting script that powers Puppycam's collision system.
 - [The Clever Folks™](https://github.com/n64decomp/sm64) who made the decompilation project happen to begin with
+- [CrashOveride](https://github.com/CrashOveride95) for creating the decomp fork that this is developed for
+### Ultra Puppycam Contributors:
+- [Axollyon](https://github.com/Axollyon)
+- [Fazana](https://github.com/FazanaJ)
+- [someone2639](https://github.com/farisawan-2000)
+- [Yoshi Milkman](https://github.com/YoshiMilkman)
 
 SM64 Decomp Discord: https://discord.gg/DuYH3Fh

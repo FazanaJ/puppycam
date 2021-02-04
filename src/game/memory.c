@@ -1,14 +1,11 @@
 #include <PR/ultratypes.h>
-#ifndef TARGET_N64
-#include <string.h>
-#endif
 
 #include "sm64.h"
 
 #define INCLUDED_FROM_MEMORY_C
 
 #include "buffers/buffers.h"
-#include "decompress.h"
+#include "slidec.h"
 #include "game_init.h"
 #include "main.h"
 #include "memory.h"
@@ -24,7 +21,7 @@ struct MainPoolState {
     u32 freeSpace;
     struct MainPoolBlock *listHeadL;
     struct MainPoolBlock *listHeadR;
-    void *prev;
+    struct MainPoolState *prev;
 };
 
 struct MainPoolBlock {
@@ -32,15 +29,15 @@ struct MainPoolBlock {
     struct MainPoolBlock *next;
 };
 
-struct MemoryPool {
-    u32 totalSpace;
-    struct MemoryBlock *firstBlock;
-    struct MemoryBlock *freeList;
-};
-
 struct MemoryBlock {
     struct MemoryBlock *next;
     u32 size;
+};
+
+struct MemoryPool {
+    u32 totalSpace;
+    struct MemoryBlock *firstBlock;
+    struct MemoryBlock freeList;
 };
 
 extern uintptr_t sSegmentTable[32];
@@ -93,15 +90,16 @@ void *virtual_to_segmented(u32 segment, const void *addr) {
 void move_segment_table_to_dmem(void) {
     s32 i;
 
-    for (i = 0; i < 16; i++)
+    for (i = 0; i < 16; i++) {
         gSPSegment(gDisplayListHead++, i, sSegmentTable[i]);
+    }
 }
 #else
 void *segmented_to_virtual(const void *addr) {
     return (void *) addr;
 }
 
-void *virtual_to_segmented(UNUSED u32 segment, const void *addr) {
+void *virtual_to_segmented(u32 segment, const void *addr) {
     return (void *) addr;
 }
 
@@ -160,7 +158,8 @@ void *main_pool_alloc(u32 size, u32 side) {
 
 /**
  * Free a block of memory that was allocated from the pool. The block must be
- * the most recently allocated block from its end of the pool.
+ * the most recently allocated block from its end of the pool, otherwise all
+ * newer blocks are freed as well.
  * Return the amount of free space left in the pool.
  */
 u32 main_pool_free(void *addr) {
@@ -215,7 +214,7 @@ u32 main_pool_available(void) {
  * in the pool.
  */
 u32 main_pool_push_state(void) {
-    void *prevState = gMainPoolState;
+    struct MainPoolState *prevState = gMainPoolState;
     u32 freeSpace = sPoolFreeSpace;
     struct MainPoolBlock *lhead = sPoolListHeadL;
     struct MainPoolBlock *rhead = sPoolListHeadR;
@@ -245,8 +244,8 @@ u32 main_pool_pop_state(void) {
  * function blocks until completion.
  */
 static void dma_read(u8 *dest, u8 *srcStart, u8 *srcEnd) {
-#ifdef TARGET_N64
     u32 size = ALIGN16(srcEnd - srcStart);
+
     osInvalDCache(dest, size);
     while (size != 0) {
         u32 copySize = (size >= 0x1000) ? 0x1000 : size;
@@ -259,9 +258,6 @@ static void dma_read(u8 *dest, u8 *srcStart, u8 *srcEnd) {
         srcStart += copySize;
         size -= copySize;
     }
-#else
-    memcpy(dest, srcStart, srcEnd - srcStart);
-#endif
 }
 
 /**
@@ -336,7 +332,7 @@ void *load_segment_decompress(s32 segment, u8 *srcStart, u8 *srcEnd) {
         dma_read(compressed, srcStart, srcEnd);
         dest = main_pool_alloc(*size, MEMORY_POOL_LEFT);
         if (dest != NULL) {
-            decompress(compressed, dest);
+            slidstart(compressed, dest);
             set_segment_base_addr(segment, dest);
             main_pool_free(compressed);
         } else {
@@ -354,7 +350,7 @@ void *load_segment_decompress_heap(u32 segment, u8 *srcStart, u8 *srcEnd) {
 
     if (compressed != NULL) {
         dma_read(compressed, srcStart, srcEnd);
-        decompress(compressed, gDecompressionHeap);
+        slidstart(compressed, gDecompressionHeap);
         set_segment_base_addr(segment, gDecompressionHeap);
         main_pool_free(compressed);
     } else {
@@ -363,8 +359,8 @@ void *load_segment_decompress_heap(u32 segment, u8 *srcStart, u8 *srcEnd) {
 }
 
 void load_engine_code_segment(void) {
-    void *startAddr = (void *) SEG_ENGINE;
-    u32 totalSize = SEG_FRAMEBUFFERS - SEG_ENGINE;
+    void *startAddr = (void *) _engineSegmentStart;
+    u32 totalSize = _engineSegmentEnd - _engineSegmentStart;
     UNUSED u32 alignedSize = ALIGN16(_engineSegmentRomEnd - _engineSegmentRomStart);
 
     bzero(startAddr, totalSize);
@@ -440,13 +436,13 @@ struct MemoryPool *mem_pool_init(u32 size, u32 side) {
     struct MemoryPool *pool = NULL;
 
     size = ALIGN4(size);
-    addr = main_pool_alloc(size + ALIGN16(sizeof(struct MemoryPool)), side);
+    addr = main_pool_alloc(size + sizeof(struct MemoryPool), side);
     if (addr != NULL) {
         pool = (struct MemoryPool *) addr;
 
         pool->totalSpace = size;
-        pool->firstBlock = (struct MemoryBlock *) ((u8 *) addr + ALIGN16(sizeof(struct MemoryPool)));
-        pool->freeList = (struct MemoryBlock *) ((u8 *) addr + ALIGN16(sizeof(struct MemoryPool)));
+        pool->firstBlock = (struct MemoryBlock *) ((u8 *) addr + sizeof(struct MemoryPool));
+        pool->freeList.next = (struct MemoryBlock *) ((u8 *) addr + sizeof(struct MemoryPool));
 
         block = pool->firstBlock;
         block->next = NULL;
@@ -459,7 +455,7 @@ struct MemoryPool *mem_pool_init(u32 size, u32 side) {
  * Allocate from a memory pool. Return NULL if there is not enough space.
  */
 void *mem_pool_alloc(struct MemoryPool *pool, u32 size) {
-    struct MemoryBlock *freeBlock = (struct MemoryBlock *) &pool->freeList;
+    struct MemoryBlock *freeBlock = &pool->freeList;
     void *addr = NULL;
 
     size = ALIGN4(size) + sizeof(struct MemoryBlock);
@@ -487,20 +483,20 @@ void *mem_pool_alloc(struct MemoryPool *pool, u32 size) {
  */
 void mem_pool_free(struct MemoryPool *pool, void *addr) {
     struct MemoryBlock *block = (struct MemoryBlock *) ((u8 *) addr - sizeof(struct MemoryBlock));
-    struct MemoryBlock *freeList = pool->freeList;
+    struct MemoryBlock *freeList = pool->freeList.next;
 
-    if (pool->freeList == NULL) {
-        pool->freeList = block;
+    if (pool->freeList.next == NULL) {
+        pool->freeList.next = block;
         block->next = NULL;
     } else {
-        if (block < pool->freeList) {
-            if ((u8 *) pool->freeList == (u8 *) block + block->size) {
+        if (block < pool->freeList.next) {
+            if ((u8 *) pool->freeList.next == (u8 *) block + block->size) {
                 block->size += freeList->size;
                 block->next = freeList->next;
-                pool->freeList = block;
+                pool->freeList.next = block;
             } else {
-                block->next = pool->freeList;
-                pool->freeList = block;
+                block->next = pool->freeList.next;
+                pool->freeList.next = block;
             }
         } else {
             while (freeList->next != NULL) {
@@ -556,6 +552,7 @@ void func_80278A78(struct MarioAnimation *a, void *b, struct Animation *target) 
     a->targetAnim = target;
 }
 
+// TODO: (Scrub C)
 s32 load_patchable_table(struct MarioAnimation *a, u32 index) {
     s32 ret = FALSE;
     struct MarioAnimDmaRelatedThing *sp20 = a->animDmaTable;

@@ -22,8 +22,8 @@ void bhv_bobomb_anchor_mario_loop(void) {
 
 void king_bobomb_act_0(void) {
 #ifndef VERSION_JP
-    o->oForwardVel = 0;
-    o->oVelY = 0;
+    o->oForwardVel = 0.0f;
+    o->oVelY = 0.0f;
 #endif
     if (o->oSubAction == 0) {
         cur_obj_become_intangible();
@@ -33,7 +33,7 @@ void king_bobomb_act_0(void) {
         o->oHealth = 3;
         if (cur_obj_can_mario_activate_textbox_2(500.0f, 100.0f)) {
             o->oSubAction++;
-            func_8031FFB4(SEQ_PLAYER_LEVEL, 60, 40);
+            seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
         }
     } else if (cur_obj_update_dialog_with_cutscene(2, 1, CUTSCENE_DIALOG, DIALOG_017)) {
         o->oAction = 2;
@@ -41,11 +41,12 @@ void king_bobomb_act_0(void) {
     }
 }
 
-int mario_is_far_below_object(f32 arg0) {
-    if (arg0 < o->oPosY - gMarioObject->oPosY)
-        return 1;
-    else
-        return 0;
+s32 mario_is_far_below_object(f32 arg0) {
+    if (arg0 < o->oPosY - gMarioObject->oPosY) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
 }
 
 void king_bobomb_act_2(void) {
@@ -151,7 +152,6 @@ void king_bobomb_act_6(void) {
             o->oKingBobombUnk104++;
         if (o->oKingBobombUnk104 > 3) {
             o->oSubAction++;
-            ; // Needed to match
         }
     } else {
         if (o->oSubAction == 1) {

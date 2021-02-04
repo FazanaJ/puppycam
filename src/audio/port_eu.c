@@ -28,13 +28,12 @@ extern OSMesgQueue *OSMesgQueues[];
 extern struct EuAudioCmd sAudioCmd[0x100];
 
 void func_8031D690(s32 player, FadeT fadeInTime);
-void sequence_player_fade_out_internal(s32 player, FadeT fadeOutTime);
+void seq_player_fade_to_zero_volume(s32 player, FadeT fadeOutTime);
 void port_eu_init_queues(void);
 void decrease_sample_dma_ttls(void);
 s32 audio_shut_down_and_reset_step(void);
 void func_802ad7ec(u32);
 
-#ifdef TARGET_N64
 struct SPTask *create_next_audio_frame_task(void) {
     u32 samplesRemainingInAI;
     s32 writtenCmds;
@@ -115,12 +114,12 @@ struct SPTask *create_next_audio_frame_task(void) {
     task = &gAudioTask->task.t;
     task->type = M_AUDTASK;
     task->flags = flags;
-    task->ucode_boot = rspF3DBootStart;
-    task->ucode_boot_size = (u8 *) rspF3DBootEnd - (u8 *) rspF3DBootStart;
-    task->ucode = rspAspMainStart;
-    task->ucode_data = rspAspMainDataStart;
+    task->ucode_boot = rspbootTextStart;
+    task->ucode_boot_size = (u8 *) rspbootTextEnd - (u8 *) rspbootTextStart;
+    task->ucode = aspMainTextStart;
+    task->ucode_data = aspMainDataStart;
     task->ucode_size = 0x800; // (this size is ignored)
-    task->ucode_data_size = (rspAspMainDataEnd - rspAspMainDataStart) * sizeof(u64);
+    task->ucode_data_size = (aspMainDataEnd - aspMainDataStart) * sizeof(u64);
     task->dram_stack = NULL;
     task->dram_stack_size = 0;
     task->output_buff = NULL;
@@ -131,32 +130,6 @@ struct SPTask *create_next_audio_frame_task(void) {
     task->yield_data_size = 0;
     return gAudioTask;
 }
-#else
-struct SPTask *create_next_audio_frame_task(void) {
-    return NULL;
-}
-void create_next_audio_buffer(s16 *samples, u32 num_samples) {
-    s32 writtenCmds;
-    OSMesg msg;
-    gAudioFrameCount++;
-    decrease_sample_dma_ttls();
-    if (osRecvMesg(OSMesgQueues[2], &msg, 0) != -1) {
-        gAudioResetPresetIdToLoad = (u8) (s32) msg;
-        gAudioResetStatus = 5;
-    }
-
-    if (gAudioResetStatus != 0) {
-        audio_reset_session();
-        gAudioResetStatus = 0;
-    }
-    if (osRecvMesg(OSMesgQueues[1], &msg, OS_MESG_NOBLOCK) != -1) {
-        func_802ad7ec((u32) msg);
-    }
-    synthesis_execute(gAudioCmdBuffers[0], &writtenCmds, samples, num_samples);
-    gAudioRandom = ((gAudioRandom + gAudioFrameCount) * gAudioFrameCount);
-    gAudioRandom = gAudioRandom + writtenCmds / 8;
-}
-#endif
 
 void eu_process_audio_cmd(struct EuAudioCmd *cmd) {
     s32 i;
@@ -168,7 +141,6 @@ void eu_process_audio_cmd(struct EuAudioCmd *cmd) {
 
     case 0x82:
     case 0x88:
-        // load_sequence(arg1, arg2, 0);
         load_sequence(cmd->u.s.arg1, cmd->u.s.arg2, cmd->u.s.arg3);
         func_8031D690(cmd->u.s.arg1, cmd->u2.as_s32);
         break;
@@ -179,7 +151,7 @@ void eu_process_audio_cmd(struct EuAudioCmd *cmd) {
                 sequence_player_disable(&gSequencePlayers[cmd->u.s.arg1]);
             }
             else {
-                sequence_player_fade_out_internal(cmd->u.s.arg1, cmd->u2.as_s32);
+                seq_player_fade_to_zero_volume(cmd->u.s.arg1, cmd->u2.as_s32);
             }
         }
         break;
@@ -214,13 +186,13 @@ extern OSMesg OSMesg1;
 extern OSMesg OSMesg2;
 extern OSMesg OSMesg3;
 
-void sequence_player_fade_out_internal(s32 player, FadeT fadeOutTime) {
+void seq_player_fade_to_zero_volume(s32 player, FadeT fadeOutTime) {
     if (fadeOutTime == 0) {
         fadeOutTime = 1;
     }
     gSequencePlayers[player].fadeVelocity = -(gSequencePlayers[player].fadeVolume / fadeOutTime);
     gSequencePlayers[player].state = 2;
-    gSequencePlayers[player].fadeTimer = fadeOutTime;
+    gSequencePlayers[player].fadeRemainingFrames = fadeOutTime;
 
 }
 
@@ -228,7 +200,7 @@ void func_8031D690(s32 player, FadeT fadeInTime) {
     if (fadeInTime != 0) {
         gSequencePlayers[player].state = 1;
         gSequencePlayers[player].fadeTimerUnkEu = fadeInTime;
-        gSequencePlayers[player].fadeTimer = fadeInTime;
+        gSequencePlayers[player].fadeRemainingFrames = fadeInTime;
         gSequencePlayers[player].fadeVolume = 0.0f;
         gSequencePlayers[player].fadeVelocity = 0.0f;
     }

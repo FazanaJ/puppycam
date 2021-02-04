@@ -18,10 +18,12 @@
 #include "print.h"
 #include "segment2.h"
 #include "segment_symbols.h"
-#include "thread6.h"
+#include "rumble_init.h"
+#include <hvqm/hvqm.h>
+#include "usb/usb.h"
+#include "usb/debug.h"
 #include <prevent_bss_reordering.h>
 #include "../../enhancements/puppycam.h"
-#include "pc/controller/controller_xinput.h"
 
 // FIXME: I'm not sure all of these variables belong in this file, but I don't
 // know of a good way to split them
@@ -47,12 +49,12 @@ struct MarioAnimation D_80339D10;
 struct MarioAnimation gDemo;
 UNUSED u8 filler80339D30[0x90];
 
-int unused8032C690 = 0;
+s32 unused8032C690 = 0;
 u32 gGlobalTimer = 0;
 
-static u16 sCurrFBNum = 0;
+u16 sCurrFBNum = 0;
 u16 frameBufferIndex = 0;
-void (*D_8032C6A0)(void) = NULL;
+void (*gGoddardVblankCallback)(void) = NULL;
 struct Controller *gPlayer1Controller = &gControllers[0];
 struct Controller *gPlayer2Controller = &gControllers[1];
 // probably debug only, see note below
@@ -223,12 +225,24 @@ void create_task_structure(void) {
     gGfxSPTask->msgqueue = &D_80339CB8;
     gGfxSPTask->msg = (OSMesg) 2;
     gGfxSPTask->task.t.type = M_GFXTASK;
-#if TARGET_N64
-    gGfxSPTask->task.t.ucode_boot = rspF3DBootStart;
-    gGfxSPTask->task.t.ucode_boot_size = ((u8 *) rspF3DBootEnd - (u8 *) rspF3DBootStart);
+    gGfxSPTask->task.t.ucode_boot = rspbootTextStart;
+    gGfxSPTask->task.t.ucode_boot_size = ((u8 *) rspbootTextEnd - (u8 *) rspbootTextStart);
     gGfxSPTask->task.t.flags = 0;
-    gGfxSPTask->task.t.ucode = rspF3DStart;
-    gGfxSPTask->task.t.ucode_data = rspF3DDataStart;
+#ifdef  F3DZEX_GBI_2
+    gGfxSPTask->task.t.ucode = gspF3DZEX2_PosLight_fifoTextStart;
+    gGfxSPTask->task.t.ucode_data = gspF3DZEX2_PosLight_fifoDataStart;
+#elif   F3DEX_GBI_2
+    gGfxSPTask->task.t.ucode = gspF3DEX2_fifoTextStart;
+    gGfxSPTask->task.t.ucode_data = gspF3DEX2_fifoDataStart;
+#elif   F3DEX_GBI
+    gGfxSPTask->task.t.ucode = gspF3DEX_fifoTextStart;
+    gGfxSPTask->task.t.ucode_data = gspF3DEX_fifoDataStart;
+#elif   SUPER3D_GBI
+    gGfxSPTask->task.t.ucode = gspSuper3D_fifoTextStart;
+    gGfxSPTask->task.t.ucode_data = gspSuper3D_fifoDataStart; 
+#else
+    gGfxSPTask->task.t.ucode = gspFast3D_fifoTextStart;
+    gGfxSPTask->task.t.ucode_data = gspFast3D_fifoDataStart;
 #endif
     gGfxSPTask->task.t.ucode_size = SP_UCODE_SIZE; // (this size is ignored)
     gGfxSPTask->task.t.ucode_data_size = SP_UCODE_DATA_SIZE;
@@ -282,7 +296,7 @@ void draw_reset_bars(void) {
         sp18 += D_8032C648++ * (SCREEN_WIDTH / 4);
 
         for (sp24 = 0; sp24 < ((SCREEN_HEIGHT / 16) + 1); sp24++) {
-            // Must be on one line to match -O2
+            // Loop must be one line to match on -O2
             for (sp20 = 0; sp20 < (SCREEN_WIDTH / 4); sp20++) *sp18++ = 0;
             sp18 += ((SCREEN_WIDTH / 4) * 14);
         }
@@ -309,7 +323,7 @@ void rendering_init(void) {
 }
 
 void config_gfx_pool(void) {
-    gGfxPool = &gGfxPools[gGlobalTimer % GFX_NUM_POOLS];
+    gGfxPool = &gGfxPools[gGlobalTimer % 2];
     set_segment_base_addr(1, gGfxPool->buffer);
     gGfxSPTask = &gGfxPool->spTask;
     gDisplayListHead = gGfxPool->buffer;
@@ -320,9 +334,9 @@ void config_gfx_pool(void) {
 void display_and_vsync(void) {
     profiler_log_thread5_time(BEFORE_DISPLAY_LISTS);
     osRecvMesg(&D_80339CB8, &D_80339BEC, OS_MESG_BLOCK);
-    if (D_8032C6A0 != NULL) {
-        D_8032C6A0();
-        D_8032C6A0 = NULL;
+    if (gGoddardVblankCallback != NULL) {
+        gGoddardVblankCallback();
+        gGoddardVblankCallback = NULL;
     }
     send_display_list(&gGfxPool->spTask);
     profiler_log_thread5_time(AFTER_DISPLAY_LISTS);
@@ -341,7 +355,7 @@ void display_and_vsync(void) {
 
 // this function records distinct inputs over a 255-frame interval to RAM locations and was likely
 // used to record the demo sequences seen in the final game. This function is unused.
-static void record_demo(void) {
+UNUSED static void record_demo(void) {
     // record the player's button mask and current rawStickX and rawStickY.
     u8 buttonMask =
         ((gPlayer1Controller->buttonDown & (A_BUTTON | B_BUTTON | Z_TRIG | START_BUTTON)) >> 8)
@@ -485,7 +499,7 @@ void read_controller_inputs(void) {
     if (gControllerBits) {
         osRecvMesg(&gSIEventMesgQueue, &D_80339BEC, OS_MESG_BLOCK);
         osContGetReadData(&gControllerPads[0]);
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
         release_rumble_pak_control();
 #endif
     }
@@ -554,7 +568,7 @@ void init_controllers(void) {
             // into any port in order to play the game. this was probably
             // so if any of the ports didn't work, you can have controllers
             // plugged into any of them and it will work.
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
             gControllers[cont].port = port;
 #endif
             gControllers[cont].statusData = &gControllerStatuses[port];
@@ -580,64 +594,50 @@ void setup_game_memory(void) {
     set_segment_base_addr(24, (void *) D_80339CF4);
     func_80278A78(&gDemo, gDemoInputs, D_80339CF4);
     load_segment(0x10, _entrySegmentRomStart, _entrySegmentRomEnd, MEMORY_POOL_LEFT);
-    load_segment_decompress(2, _segment2_mio0SegmentRomStart, _segment2_mio0SegmentRomEnd);
+    load_segment_decompress(2, _segment2_yay0SegmentRomStart, _segment2_yay0SegmentRomEnd);
 }
-
-#ifndef TARGET_N64
-static struct LevelCommand *levelCommandAddr;
-#endif
 
 // main game loop thread. runs forever as long as the game
 // continues.
 void thread5_game_loop(UNUSED void *arg) {
-#ifdef TARGET_N64
-    struct LevelCommand *levelCommandAddr;
-#endif
+    struct LevelCommand *addr;
 
     setup_game_memory();
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
     init_rumble_pak_scheduler_queue();
 #endif
+#ifdef UNF
+    debug_initialize();
+#endif
     init_controllers();
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
     create_thread_6();
 #endif
+    createHvqmThread();
     save_file_load_all();
 
     set_vblank_handler(2, &gGameVblankHandler, &gGameVblankQueue, (OSMesg) 1);
 
-    // point levelCommandAddr to the entry point into the level script data.
-    levelCommandAddr = segmented_to_virtual(level_script_entry);
+    // point addr to the entry point into the level script data.
+    addr = segmented_to_virtual(level_script_entry);
 
     play_music(SEQ_PLAYER_SFX, SEQUENCE_ARGS(0, SEQ_SOUND_PLAYER), 0);
     set_sound_mode(save_file_get_sound_mode());
     newcam_init_settings();
-
-#ifdef TARGET_N64
     rendering_init();
 
-    while (1) {
-#else
-    gGlobalTimer++;
-}
-
-void game_loop_one_iteration(void) {
-#endif
+    while (TRUE) {
         // if the reset timer is active, run the process to reset the game.
         if (gResetTimer) {
             draw_reset_bars();
-#ifdef TARGET_N64
             continue;
-#else
-            return;
-#endif
         }
         profiler_log_thread5_time(THREAD5_START);
 
         // if any controllers are plugged in, start read the data for when
         // read_controller_inputs is called later.
         if (gControllerBits) {
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
             block_until_rumble_pak_free();
 #endif
             osContStartReadData(&gSIEventMesgQueue);
@@ -646,7 +646,8 @@ void game_loop_one_iteration(void) {
         audio_game_loop_tick();
         config_gfx_pool();
         read_controller_inputs();
-        levelCommandAddr = level_script_execute(levelCommandAddr);
+        addr = level_script_execute(addr);
+
         display_and_vsync();
 
         // when debug info is enabled, print the "BUF %d" information.
@@ -655,7 +656,10 @@ void game_loop_one_iteration(void) {
             // amount of free space remaining.
             print_text_fmt_int(180, 20, "BUF %d", gGfxPoolEnd - (u8 *) gDisplayListHead);
         }
-#ifdef TARGET_N64
+        // uncomment for HVQM
+        // if (gPlayer1Controller->buttonPressed & L_TRIG) {
+        //     osStartThread(&hvqmThread);
+        //     osRecvMesg(&gDmaMesgQueue, NULL, OS_MESG_BLOCK);
+        // }
     }
-#endif
 }

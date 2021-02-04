@@ -190,10 +190,10 @@
 #define /*0x100*/ oArrowLiftUnk100             OBJECT_FIELD_S32(0x1E)
 
 /* Back-and-Forth Platform */
-#define /*0x0F4*/ oBackAndForthPlatformUnkF4  OBJECT_FIELD_F32(0x1B)
-#define /*0x0F8*/ oBackAndForthPlatformUnkF8  OBJECT_FIELD_F32(0x1C)
-#define /*0x0FC*/ oBackAndForthPlatformUnkFC  OBJECT_FIELD_F32(0x1D)
-#define /*0x100*/ oBackAndForthPlatformUnk100 OBJECT_FIELD_F32(0x1E)
+#define /*0x0F4*/ oBackAndForthPlatformDirection  OBJECT_FIELD_F32(0x1B)
+#define /*0x0F8*/ oBackAndForthPlatformPathLength OBJECT_FIELD_F32(0x1C)
+#define /*0x0FC*/ oBackAndForthPlatformDistance   OBJECT_FIELD_F32(0x1D)
+#define /*0x100*/ oBackAndForthPlatformVel        OBJECT_FIELD_F32(0x1E)
 
 /* Bird */
 #define /*0x0F4*/ oBirdSpeed       OBJECT_FIELD_F32(0x1B)
@@ -485,30 +485,30 @@
 #define /*0x100*/ oBlueFishRandomAngle OBJECT_FIELD_F32(0x1E)
 
 /* Fish Group */
-#define /*0x0F4*/ oFishWaterLevel      OBJECT_FIELD_F32(0x1B)
-#define /*0x0F8*/ oFishPosY            OBJECT_FIELD_F32(0x1C)
-#define /*0x0FC*/ oFishRandomOffset    OBJECT_FIELD_F32(0x1D)
-#define /*0x100*/ oFishRandomSpeed     OBJECT_FIELD_S32(0x1E)
-#define /*0x104*/ oFishRespawnDistance OBJECT_FIELD_F32(0x1F)
-#define /*0x108*/ oFishRandomVel       OBJECT_FIELD_F32(0x20)
-#define /*0x10C*/ oFishDepthDistance   OBJECT_FIELD_F32(0x21)
-#define /*0x110*/ oFishActiveDistance  OBJECT_FIELD_F32(0x22)
+#define /*0x0F4*/ oFishWaterLevel     OBJECT_FIELD_F32(0x1B)
+#define /*0x0F8*/ oFishGoalY          OBJECT_FIELD_F32(0x1C)
+#define /*0x0FC*/ oFishHeightOffset   OBJECT_FIELD_F32(0x1D)
+#define /*0x100*/ oFishYawVel         OBJECT_FIELD_S32(0x1E)
+#define /*0x104*/ oFishRoamDistance   OBJECT_FIELD_F32(0x1F)
+#define /*0x108*/ oFishGoalVel        OBJECT_FIELD_F32(0x20)
+#define /*0x10C*/ oFishDepthDistance  OBJECT_FIELD_F32(0x21)
+#define /*0x110*/ oFishActiveDistance OBJECT_FIELD_F32(0x22)
 
 /* Flame */
-#define /*0x0F4*/ oFlameUnkF4  OBJECT_FIELD_F32(0x1B)
-#define /*0x0F8*/ oFlameUnkF8  OBJECT_FIELD_S32(0x1C)
-#define /*0x0FC*/ oFlameUnkFC  OBJECT_FIELD_F32(0x1D)
-#define /*0x100*/ oFlameUnk100 OBJECT_FIELD_OBJ(0x1E)
+#define /*0x0F4*/ oFlameScale            OBJECT_FIELD_F32(0x1B)
+#define /*0x0F8*/ oFlameSpeedTimerOffset OBJECT_FIELD_S32(0x1C)
+#define /*0x0FC*/ oFlameUnkFC            OBJECT_FIELD_F32(0x1D)
+#define /*0x100*/ oFlameBowser           OBJECT_FIELD_OBJ(0x1E)
 
 /* Blue Flame */
-#define /*0x0F8*/ oBlueFlameUnkF8 OBJECT_FIELD_F32(0x1C)
+#define /*0x0F8*/ oBlueFlameNextScale OBJECT_FIELD_F32(0x1C)
 
 /* Small Piranha Flame */
-#define /*0x0F4*/ oSmallPiranhaFlameUnkF4  OBJECT_FIELD_F32(0x1B)
-#define /*0x0F8*/ oSmallPiranhaFlameUnkF8  OBJECT_FIELD_F32(0x1C)
-#define /*0x0FC*/ oSmallPiranhaFlameUnkFC  OBJECT_FIELD_S32(0x1D)
-#define /*0x100*/ oSmallPiranhaFlameUnk100 OBJECT_FIELD_S32(0x1E)
-#define /*0x104*/ oSmallPiranhaFlameUnk104 OBJECT_FIELD_F32(0x1F)
+#define /*0x0F4*/ oSmallPiranhaFlameStartSpeed     OBJECT_FIELD_F32(0x1B)
+#define /*0x0F8*/ oSmallPiranhaFlameEndSpeed       OBJECT_FIELD_F32(0x1C)
+#define /*0x0FC*/ oSmallPiranhaFlameModel          OBJECT_FIELD_S32(0x1D)
+#define /*0x100*/ oSmallPiranhaFlameNextFlameTimer OBJECT_FIELD_S32(0x1E)
+#define /*0x104*/ oSmallPiranhaFlameSpeed          OBJECT_FIELD_F32(0x1F)
 
 /* Moving Flame */
 #define /*0x0F4*/ oMovingFlameTimer OBJECT_FIELD_S32(0x1B)
@@ -670,9 +670,8 @@
 #define /*0x10C*/ oMenuButtonActionPhase OBJECT_FIELD_S32(0x21)
 
 /* Manta Ray */
-#define /*0x0F4*/ oMantaUnkF4  OBJECT_FIELD_S32(0x1B)
-#define /*0x0F8*/ oMantaUnkF8  OBJECT_FIELD_S32(0x1C)
-#define /*0x1AC*/ oMantaUnk1AC OBJECT_FIELD_S32(0x49)
+#define /*0x0F4*/ oMantaTargetPitch OBJECT_FIELD_S32(0x1B)
+#define /*0x0F8*/ oMantaTargetYaw   OBJECT_FIELD_S32(0x1C)
 
 /* Merry-Go-Round */
 #define /*0x088*/ oMerryGoRoundStopped         OBJECT_FIELD_S32(0x00)
@@ -959,7 +958,7 @@
 #define /*0x10C*/ oTiltingPyramidMarioOnPlatform OBJECT_FIELD_S32(0x21)
 
 /* Toad Message */
-#define /*0x108*/ oToadMessageDialogId      OBJECT_FIELD_U32(0x20)
+#define /*0x108*/ oToadMessageDialogId       OBJECT_FIELD_U32(0x20)
 #define /*0x10C*/ oToadMessageRecentlyTalked OBJECT_FIELD_S32(0x21)
 #define /*0x110*/ oToadMessageState          OBJECT_FIELD_S32(0x22)
 
@@ -1050,7 +1049,7 @@
 #define /*0x1AC*/ oUkikiTextState      OBJECT_FIELD_S16(0x49, 0)
 #define /*0x1AE*/ oUkikiTextboxTimer   OBJECT_FIELD_S16(0x49, 1)
 #define /*0x1B0*/ oUkikiCageSpinTimer  OBJECT_FIELD_S16(0x4A, 0)
-#define /*0x1B2*/ oUkikiHasHat         OBJECT_FIELD_S16(0x4A, 1)
+#define /*0x1B2*/ oUkikiHasCap         OBJECT_FIELD_S16(0x4A, 1)
 
 /* Ukiki Cage*/
 #define /*0x088*/ oUkikiCageNextAction OBJECT_FIELD_S32(0x00)
@@ -1084,7 +1083,7 @@
 #define /*0x0F4*/ oCannonBarrelBubblesUnkF4 OBJECT_FIELD_F32(0x1B)
 
 /* Water Level Pillar */
-#define /*0x0F8*/ oWaterLevelPillarUnkF8 OBJECT_FIELD_S32(0x1C)
+#define /*0x0F8*/ oWaterLevelPillarDrained OBJECT_FIELD_S32(0x1C)
 
 /* Water Level Trigger */
 #define /*0x0F4*/ oWaterLevelTriggerUnkF4            OBJECT_FIELD_S32(0x1B)

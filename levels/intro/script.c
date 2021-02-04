@@ -18,18 +18,21 @@
 #include "make_const_nonconst.h"
 #include "levels/intro/header.h"
 
-const LevelScript level_intro_entry_1[] = {
+const LevelScript level_intro_splash_screen[] = {
     INIT_LEVEL(),
     FIXED_LOAD(/*loadAddr*/ _goddardSegmentStart, /*romStart*/ _goddardSegmentRomStart, /*romEnd*/ _goddardSegmentRomEnd),
     LOAD_RAW(/*seg*/ 0x13, _behaviorSegmentRomStart, _behaviorSegmentRomEnd),
-    LOAD_MIO0(/*seg*/ 0x07, _intro_segment_7SegmentRomStart, _intro_segment_7SegmentRomEnd),
-    ALLOC_LEVEL_POOL(),
+    LOAD_YAY0(/*seg*/ 0x07, _intro_segment_7SegmentRomStart, _intro_segment_7SegmentRomEnd),
 
+    // Load "Super Mario 64" logo
+    ALLOC_LEVEL_POOL(),
     AREA(/*index*/ 1, intro_geo_0002D0),
     END_AREA(),
-
     FREE_LEVEL_POOL(),
+
+    // Start animation
     LOAD_AREA(/*area*/ 1),
+
     CALL(/*arg*/ 0, /*func*/ lvl_intro_update),
     SLEEP(/*frames*/ 75),
     TRANSITION(/*transType*/ WARP_TRANSITION_FADE_INTO_COLOR, /*time*/ 16, /*color*/ 0x00, 0x00, 0x00),
@@ -37,22 +40,21 @@ const LevelScript level_intro_entry_1[] = {
     CMD2A(/*unk2*/ 1),
     CLEAR_LEVEL(),
     SLEEP(/*frames*/ 2),
-    EXIT_AND_EXECUTE(/*seg*/ 0x14, _introSegmentRomStart, _introSegmentRomEnd, level_intro_entry_2),
+    EXIT_AND_EXECUTE(/*seg*/ 0x14, _introSegmentRomStart, _introSegmentRomEnd, level_intro_mario_head_regular),
 };
 
-const LevelScript level_intro_entry_2[] = {
+const LevelScript level_intro_mario_head_regular[] = {
     INIT_LEVEL(),
     BLACKOUT(/*active*/ TRUE),
     FIXED_LOAD(/*loadAddr*/ _goddardSegmentStart, /*romStart*/ _goddardSegmentRomStart, /*romEnd*/ _goddardSegmentRomEnd),
-    LOAD_MARIO_HEAD(/*loadHeadID*/ REGULAR_FACE),
     LOAD_RAW(/*seg*/ 0x13, _behaviorSegmentRomStart, _behaviorSegmentRomEnd),
-    LOAD_MIO0_TEXTURE(/*seg*/ 0x0A, _title_screen_bg_mio0SegmentRomStart, _title_screen_bg_mio0SegmentRomEnd),
+    LOAD_YAY0_TEXTURE(/*seg*/ 0x0A, _title_screen_bg_yay0SegmentRomStart, _title_screen_bg_yay0SegmentRomEnd),
+
     ALLOC_LEVEL_POOL(),
-
-    AREA(/*index*/ 1, intro_geo_00035C),
+    AREA(/*index*/ 1, intro_geo_mario_head_regular),
     END_AREA(),
-
     FREE_LEVEL_POOL(),
+
     SLEEP(/*frames*/ 2),
     BLACKOUT(/*active*/ FALSE),
     LOAD_AREA(/*area*/ 1),
@@ -65,16 +67,15 @@ const LevelScript level_intro_entry_2[] = {
     JUMP(script_intro_L4),
 };
 
-const LevelScript level_intro_entry_3[] = {
+const LevelScript level_intro_mario_head_dizzy[] = {
     INIT_LEVEL(),
     BLACKOUT(/*active*/ TRUE),
     FIXED_LOAD(/*loadAddr*/ _goddardSegmentStart, /*romStart*/ _goddardSegmentRomStart, /*romEnd*/ _goddardSegmentRomEnd),
-    LOAD_MARIO_HEAD(/*loadHeadID*/ DIZZY_FACE),
     LOAD_RAW(/*seg*/ 0x13, _behaviorSegmentRomStart, _behaviorSegmentRomEnd),
-    LOAD_MIO0_TEXTURE(/*seg*/ 0x0A, _title_screen_bg_mio0SegmentRomStart, _title_screen_bg_mio0SegmentRomEnd),
+    LOAD_YAY0_TEXTURE(/*seg*/ 0x0A, _title_screen_bg_yay0SegmentRomStart, _title_screen_bg_yay0SegmentRomEnd),
     ALLOC_LEVEL_POOL(),
 
-    AREA(/*index*/ 1, intro_geo_0003B8),
+    AREA(/*index*/ 1, intro_geo_mario_head_dizzy),
     END_AREA(),
 
     FREE_LEVEL_POOL(),
@@ -93,8 +94,8 @@ const LevelScript level_intro_entry_3[] = {
 const LevelScript level_intro_entry_4[] = {
     INIT_LEVEL(),
     LOAD_RAW(/*seg*/ 0x13, _behaviorSegmentRomStart, _behaviorSegmentRomEnd),
-    LOAD_MIO0_TEXTURE(/*seg*/ 0x0A, _title_screen_bg_mio0SegmentRomStart, _title_screen_bg_mio0SegmentRomEnd),
-    LOAD_MIO0(/*seg*/ 0x07, _debug_level_select_mio0SegmentRomStart, _debug_level_select_mio0SegmentRomEnd),
+    LOAD_YAY0_TEXTURE(/*seg*/ 0x0A, _title_screen_bg_yay0SegmentRomStart, _title_screen_bg_yay0SegmentRomEnd),
+    LOAD_YAY0(/*seg*/ 0x07, _debug_level_select_yay0SegmentRomStart, _debug_level_select_yay0SegmentRomEnd),
     FIXED_LOAD(/*loadAddr*/ _goddardSegmentStart, /*romStart*/ _goddardSegmentRomStart, /*romEnd*/ _goddardSegmentRomEnd),
     ALLOC_LEVEL_POOL(),
 
@@ -154,5 +155,5 @@ const LevelScript script_intro_L5[] = {
     SLEEP(/*frames*/ 16),
     CLEAR_LEVEL(),
     SLEEP(/*frames*/ 2),
-    EXIT_AND_EXECUTE(/*seg*/ 0x14, _introSegmentRomStart, _introSegmentRomEnd, level_intro_entry_1),
+    EXIT_AND_EXECUTE(/*seg*/ 0x14, _introSegmentRomStart, _introSegmentRomEnd, level_intro_splash_screen),
 };

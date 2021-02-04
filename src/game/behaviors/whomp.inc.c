@@ -1,7 +1,7 @@
 // whomp.c.inc
 
 void whomp_play_sfx_from_pound_animation(void) {
-    UNUSED s32 sp2C = o->header.gfx.unk38.animFrame;
+    UNUSED s32 sp2C = o->header.gfx.animInfo.animFrame;
     s32 sp28 = 0;
     if (o->oForwardVel < 5.0f) {
         sp28 = cur_obj_check_anim_frame(0);
@@ -23,7 +23,7 @@ void whomp_act_0(void) {
         if (o->oSubAction == 0) {
             if (o->oDistanceToMario < 600.0f) {
                 o->oSubAction++;
-                func_8031FFB4(SEQ_PLAYER_LEVEL, 60, 40);
+                seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
             } else {
                 cur_obj_set_pos_to_home();
                 o->oHealth = 3;

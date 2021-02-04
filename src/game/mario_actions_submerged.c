@@ -15,7 +15,7 @@
 #include "audio/external.h"
 #include "behavior_data.h"
 #include "level_table.h"
-#include "thread6.h"
+#include "rumble_init.h"
 
 #define MIN_SWIM_STRENGTH 160
 #define MIN_SWIM_SPEED 16.0f
@@ -480,9 +480,9 @@ static void common_swimming_step(struct MarioState *m, s16 swimStrength) {
 }
 
 static void play_swimming_noise(struct MarioState *m) {
-    s16 animFrame = m->marioObj->header.gfx.unk38.animFrame;
+    s16 animFrame = m->marioObj->header.gfx.animInfo.animFrame;
 
-    // (this need to be on one line to match on PAL)
+    // This must be one line to match on -O2
     if (animFrame == 0 || animFrame == 12) play_sound(SOUND_ACTION_UNKNOWN434, m->marioObj->header.gfx.cameraToObject);
 }
 
@@ -554,7 +554,7 @@ static s32 act_breaststroke(struct MarioState *m) {
         reset_float_globals(m);
     }
 
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
     if (m->actionTimer < 6) {
         func_sh_8024CA04();
     }
@@ -802,7 +802,7 @@ static s32 act_water_throw(struct MarioState *m) {
 
     if (m->actionTimer++ == 5) {
         mario_throw_held_object(m);
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
         queue_rumble_data(3, 50);
 #endif
     }
@@ -920,7 +920,7 @@ static s32 act_drowning(struct MarioState *m) {
         case 1:
             set_mario_animation(m, MARIO_ANIM_DROWNING_PART2);
             m->marioBodyState->eyeState = MARIO_EYES_DEAD;
-            if (m->marioObj->header.gfx.unk38.animFrame == 30) {
+            if (m->marioObj->header.gfx.animInfo.animFrame == 30) {
                 level_trigger_warp(m, WARP_OP_DEATH);
             }
             break;
@@ -978,7 +978,7 @@ static s32 act_water_plunge(struct MarioState *m) {
 
         m->particleFlags |= PARTICLE_WATER_SPLASH;
         m->actionState = 1;
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
         if (m->prevAction & ACT_FLAG_AIR) {
             queue_rumble_data(5, 80);
         }
@@ -1087,7 +1087,7 @@ static s32 act_caught_in_whirlpool(struct MarioState *m) {
     set_mario_animation(m, MARIO_ANIM_GENERAL_FALL);
     vec3f_copy(m->marioObj->header.gfx.pos, m->pos);
     vec3s_set(m->marioObj->header.gfx.angle, 0, m->faceAngle[1], 0);
-#ifdef VERSION_SH
+#if ENABLE_RUMBLE
     reset_rumble_timers();
 #endif
 
@@ -1257,7 +1257,7 @@ static s32 act_metal_water_walking(struct MarioState *m) {
             break;
 
         case GROUND_STEP_HIT_WALL:
-            m->forwardVel = 0;
+            m->forwardVel = 0.0f;
             break;
     }
 

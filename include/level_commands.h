@@ -118,6 +118,7 @@
     CMD_BBH(0x11, 0x08, arg), \
     CMD_PTR(func)
 
+// Calls func in a loop until it returns nonzero
 #define CALL_LOOP(arg, func) \
     CMD_BBH(0x12, 0x08, arg), \
     CMD_PTR(func)
@@ -143,7 +144,7 @@
     CMD_PTR(NULL), \
     CMD_PTR(NULL)
 
-#define LOAD_MIO0(seg, romStart, romEnd) \
+#define LOAD_YAY0(seg, romStart, romEnd) \
     CMD_BBH(0x18, 0x0C, 0x0000), \
     CMD_PTR(NULL), \
     CMD_PTR(NULL)
@@ -159,22 +160,22 @@
     CMD_PTR(romStart), \
     CMD_PTR(romEnd)
 
-#define LOAD_MIO0(seg, romStart, romEnd) \
+#define LOAD_YAY0(seg, romStart, romEnd) \
     CMD_BBH(0x18, 0x0C, seg), \
     CMD_PTR(romStart), \
     CMD_PTR(romEnd)
 #endif
 
-#define LOAD_MARIO_HEAD(sethead) \
-    CMD_BBH(0x19, 0x04, sethead)
+#define LOAD_MARIO_HEAD() \
+    CMD_BBH(0x32, 0x04, 0x0000)
 
 #ifdef NO_SEGMENTED_MEMORY
-#define LOAD_MIO0_TEXTURE(seg, romStart, romEnd) \
+#define LOAD_YAY0_TEXTURE(seg, romStart, romEnd) \
     CMD_BBH(0x1A, 0x0C, 0x0000), \
     CMD_PTR(NULL), \
     CMD_PTR(NULL)
 #else
-#define LOAD_MIO0_TEXTURE(seg, romStart, romEnd) \
+#define LOAD_YAY0_TEXTURE(seg, romStart, romEnd) \
     CMD_BBH(0x1A, 0x0C, seg), \
     CMD_PTR(romStart), \
     CMD_PTR(romEnd)

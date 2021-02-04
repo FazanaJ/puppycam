@@ -5,18 +5,31 @@
 ///If you do not wish to use a script in the angle, then just leave the field as 0.
 struct newcam_hardpos newcam_fixedcam[] =
 {
-///All these are sample camera angles that are designed for the base game of SM64.
-///Example camera angle. This points the camera towards the door outside the castle on the bridge.
+
+// Example Scripts
+
 {/*Level ID*/ 16,/*Area ID*/ 1,/*Permaswap*/ 0,/*Mode*/ NC_MODE_FIXED_NOMOVE,/*Script*/ 0, //Standard params.
 /*X begin*/ -540,/*Y begin*/ 800,/*Z begin*/ -3500, //Where the activation box begins
 /*X end*/ 540,/*Y end*/ 2000,/*Z end*/ -1500, //Where the activation box ends.
 /*Cam X*/ 0,/*Cam Y*/ 1500,/*Cam Z*/ -1000, //The position the camera gets placed for NC_MODE_FIXED and NC_MODE_FIXED_NOMOVE
 /*Look X*/ 0,/*Look Y*/ 800,/*Look Z*/ -2500}, //The position the camera looks at for NC_MODE_FIXED_NOMOVE
+
 ///Another example angle. This activates a script that slowly rotates the camera around the area.
 {/*Level ID*/ 16,/*Area ID*/ 1,/*Permaswap*/ 0,/*Mode*/ NC_MODE_NOROTATE,/*Script*/ &newcam_angle_rotate, //Standard params.
 /*X begin*/ 5716,/*Y begin*/ 400,/*Z begin*/ -859, //Where the activation box begins
 /*X end*/ 6908,/*Y end*/ 1000,/*Z end*/ 62, //Where the activation box ends.
 /*Cam X*/ 32767,/*Cam Y*/ 32767,/*Cam Z*/ 32767, //The position the camera gets placed for NC_MODE_FIXED and NC_MODE_FIXED_NOMOVE
 /*Look X*/ 32767,/*Look Y*/ 32767,/*Look Z*/ 32767}, //The position the camera looks at for NC_MODE_FIXED_NOMOVE
+
+/* Custom Scripts for ultrapuppycam */
+
+// Open-Area Cam with custom C-Up Mode Reimplementation
+{/*Level ID*/ LEVEL_MAX,/*Area ID*/ 1,/*Permaswap*/ 0,
+ /*Mode*/NC_MODE_NOTURN,
+ /*Script*/ &newcam_open_cam,
+ /*X begin*/ -16384	,/*Y begin*/ -16384,/*Z begin*/ -16384, //Where the activation box begins
+ /*X end*/ 16384,/*Y end*/ 16384,/*Z end*/ 16384, //Where the activation box ends.
+ /*Cam X*/ 32767,/*Cam Y*/ 32767,/*Cam Z*/ 32767, //The position the camera gets placed for NC_MODE_FIXED and NC_MODE_FIXED_NOMOVE
+ /*Look X*/ 32767,/*Look Y*/ 32767,/*Look Z*/ 32767}, //The position the camera looks at for NC_MODE_FIXED_NOMOVE
 
 };

@@ -1,5 +1,4 @@
-#include <PR/ultratypes.h>
-#include <PR/gbi.h>
+#include <ultra64.h>
 
 #include "config.h"
 #include "game_init.h"
@@ -67,7 +66,7 @@ void format_integer(s32 n, s32 base, char *dest, s32 *totalLength, u8 width, s8 
         }
 
         // Increments the number of digits until length is long enough.
-        while (1) {
+        while (TRUE) {
             powBase = int_pow(base, numDigits);
 
             if (powBase > (u32) n) {

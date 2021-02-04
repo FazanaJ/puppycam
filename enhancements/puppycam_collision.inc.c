@@ -145,8 +145,8 @@ void find_surface_on_ray(Vec3f orig, Vec3f dir, struct Surface **hit_surface, Ve
     vec3f_normalize(normalized_dir);
 
     // Get our cell coordinate
-    fCellX = (orig[0] + BOUND) / CELL_SIZE;
-    fCellZ = (orig[2] + BOUND) / CELL_SIZE;
+    fCellX = (orig[0] + LEVEL_BOUNDARY_MAX) / CELL_SIZE;
+    fCellZ = (orig[2] + LEVEL_BOUNDARY_MAX) / CELL_SIZE;
     cellX = (s16)fCellX;
     cellZ = (s16)fCellZ;
 
@@ -158,10 +158,10 @@ void find_surface_on_ray(Vec3f orig, Vec3f dir, struct Surface **hit_surface, Ve
 	}
 
     // Get cells we cross using DDA
-    if (abs(dir[0]) >= abs(dir[2]))
-        step = abs(dir[0]) / CELL_SIZE;
+    if (absf(dir[0]) >= absf(dir[2]))
+        step = absf(dir[0]) / CELL_SIZE;
     else
-        step = abs(dir[2]) / CELL_SIZE;
+        step = absf(dir[2]) / CELL_SIZE;
 
     dx = dir[0] / step / CELL_SIZE;
     dz = dir[2] / step / CELL_SIZE;

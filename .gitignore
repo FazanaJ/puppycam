@@ -12,6 +12,7 @@
 *.pch
 
 # Libraries
+*.lib
 *.a
 *.la
 *.lo
@@ -42,16 +43,14 @@
 .vscode/*
 
 # General project-specific ignores
-__pycache__/*
 doxygen/doxygen/*
 build/*
+puppycam_spline/*
 *.dump
 *.mio0
 *.z64
 *.map
 .assets-local.txt
-sm64_save_file.bin
-sm64config.txt
 
 # Assets. Generally ignored, but ones with "custom" in the name are fine.
 /levels/**/*.png
@@ -72,4 +71,10 @@ sm64config.txt
 !/sound/**/*custom*/**/*.aiff
 !/assets/**/*custom*.bin
 !/assets/**/*custom*/**/*.bin
-enhancements/puppycam.patch
+!/textures/crash_custom/*.png
+# libultra
+
+!/lib/*.a
+
+!/lib/PR/hvqm/*.o
+

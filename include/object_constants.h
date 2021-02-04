@@ -191,11 +191,22 @@
     #define BOBOMB_BUDDY_HAS_NOT_TALKED 0
     #define BOBOMB_BUDDY_HAS_TALKED 2
 
+/* Fish Spawer */
+    /* oAction */
+    #define FISH_SPAWNER_ACT_SPAWN   0
+    #define FISH_SPAWNER_ACT_IDLE    1
+    #define FISH_SPAWNER_ACT_RESPAWN 2    
+    /* oBehParams2ndByte */
+    #define FISH_SPAWNER_BP_MANY_BLUE 0
+    #define FISH_SPAWNER_BP_FEW_BLUE  1
+    #define FISH_SPAWNER_BP_MANY_CYAN 2
+    #define FISH_SPAWNER_BP_FEW_CYAN  3
+
 /* Fish */
     /* oAction */
     #define FISH_ACT_INIT 0
-    #define FISH_ACT_ACTIVE 1
-    #define FISH_ACT_RESPAWN 2
+    #define FISH_ACT_ROAM 1
+    #define FISH_ACT_FLEE 2
 
 /* Blue_Fish */
     /* oAction */
@@ -229,7 +240,7 @@
     #define AMP_BP_ROT_RADIUS_200 0
     #define AMP_BP_ROT_RADIUS_300 1
     #define AMP_BP_ROT_RADIUS_400 2
-    #define AMP_BP_ROT_RADIUS_0 3
+    #define AMP_BP_ROT_RADIUS_0   3
 
     /* oAction */
     #define AMP_ACT_IDLE 2
@@ -584,6 +595,11 @@
     #define CAMERA_LAKITU_BP_FOLLOW_CAMERA 0
     #define CAMERA_LAKITU_BP_INTRO 1
 
+/* Manta Ray */
+    /* oAction */
+    #define MANTA_ACT_SPAWN_RINGS 0
+    #define MANTA_ACT_NO_RINGS    1
+
 /* Monty mole */
     /* oAction */
     #define MONTY_MOLE_ACT_SELECT_HOLE 0
@@ -634,15 +650,15 @@
     #define UKIKI_TEXT_DEFAULT       0
     #define UKIKI_TEXT_CAGE_TEXTBOX  1
     #define UKIKI_TEXT_GO_TO_CAGE    2
-    #define UKIKI_TEXT_STOLE_HAT     3
-    #define UKIKI_TEXT_HAS_HAT       4
-    #define UKIKI_TEXT_GAVE_HAT_BACK 5
+    #define UKIKI_TEXT_STOLE_CAP     3
+    #define UKIKI_TEXT_HAS_CAP       4
+    #define UKIKI_TEXT_GAVE_CAP_BACK 5
     #define UKIKI_TEXT_DO_NOT_LET_GO 6
-    #define UKIKI_TEXT_STEAL_HAT     7
+    #define UKIKI_TEXT_STEAL_CAP     7
 
     /* oBehParams2ndByte */
     #define UKIKI_CAGE 0
-    #define UKIKI_HAT  1
+    #define UKIKI_CAP  1
 
     /* Animations */
     #define UKIKI_ANIM_RUN           0
@@ -662,10 +678,10 @@
     /* oAnimState */
     #define UKIKI_ANIM_STATE_DEFAULT    0
     #define UKIKI_ANIM_STATE_EYE_CLOSED 1
-    #define UKIKI_ANIM_STATE_HAT_ON     2
+    #define UKIKI_ANIM_STATE_CAP_ON     2
 
-    /* oUkikiHasHat */
-    #define UKIKI_HAT_ON 1
+    /* oUkikiHasCap */
+    #define UKIKI_CAP_ON 1
 
 /* Ukiki Cage Star */
     /* oAction */

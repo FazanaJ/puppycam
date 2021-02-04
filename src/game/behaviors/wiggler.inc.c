@@ -137,7 +137,7 @@ void wiggler_init_segments(void) {
             (segments + i)->yaw = o->oFaceAngleYaw;
         }
 
-        o->header.gfx.unk38.animFrame = -1;
+        o->header.gfx.animInfo.animFrame = -1;
 
         // Spawn each body part
         for (i = 1; i <= 3; i++) {
@@ -145,7 +145,7 @@ void wiggler_init_segments(void) {
                 spawn_object_relative(i, 0, 0, 0, o, MODEL_WIGGLER_BODY, bhvWigglerBody);
             if (bodyPart != NULL) {
                 obj_init_animation_with_sound(bodyPart, wiggler_seg5_anims_0500C874, 0);
-                bodyPart->header.gfx.unk38.animFrame = (23 * i) % 26 - 1;
+                bodyPart->header.gfx.animInfo.animFrame = (23 * i) % 26 - 1;
             }
         }
 
@@ -222,7 +222,7 @@ static void wiggler_act_walk(void) {
     // Update text if necessary
     if (o->oWigglerTextStatus < WIGGLER_TEXT_STATUS_COMPLETED_DIALOG) {
         if (o->oWigglerTextStatus == WIGGLER_TEXT_STATUS_AWAIT_DIALOG) {
-            func_8031FFB4(SEQ_PLAYER_LEVEL, 60, 40);
+            seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
             o->oWigglerTextStatus = WIGGLER_TEXT_STATUS_SHOWING_DIALOG;
         }
 
