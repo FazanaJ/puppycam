@@ -433,7 +433,7 @@ void puppycam_init(void)
     gPuppyCam.zoomTarget = gPuppyCam.zoom;
     gPuppyCam.yaw = gMarioState->faceAngle[1]+0x8000;
     gPuppyCam.yawTarget = gPuppyCam.yaw;
-    gPuppyCam.pitch = 0x3000;
+    gPuppyCam.pitch = 0x3800;
     gPuppyCam.pitchTarget = gPuppyCam.pitch;
     gPuppyCam.yawAcceleration = 0;
     gPuppyCam.pitchAcceleration = 0;
@@ -1244,7 +1244,7 @@ static void puppycam_collision(void)
         return;
 
     target[0] = gPuppyCam.targetObj->oPosX;
-    target[1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight*0.75f);
+    target[1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight);
     target[2] = gPuppyCam.targetObj->oPosZ;
 
     camdir[0] = LENSIN(LENSIN(gPuppyCam.zoomTarget,pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[0];
