@@ -21,6 +21,7 @@
 #include "object_helpers.h"
 #include "behavior_data.h"
 #include "save_file.h"
+#include "mario.h"
 
 #define OFFSET 30.0f
 #define STEPS 1
@@ -128,6 +129,7 @@ void puppycam_default_config(void)
     gPuppyCam.options.sensitivityY = 100;
     gPuppyCam.options.turnAggression = 50;
     gPuppyCam.options.analogue = 0;
+    gPuppyCam.options.inputType = 0;
 }
 
 //Initial setup. Ran at the beginning of the game and never again.
@@ -195,7 +197,6 @@ static void newcam_process_cutscene(void)
     gPuppyCam.sceneTimer++;
     }
 }
-
 
 ///MENU
 
@@ -418,7 +419,6 @@ void puppycam_check_pause_buttons()
 //Set up values. Runs on level load.
 void puppycam_init(void)
 {
-
     if (gMarioState->marioObj)
         gPuppyCam.targetObj = gMarioState->marioObj;
     gPuppyCam.targetObj2 = NULL;
@@ -456,6 +456,8 @@ void puppycam_init(void)
     gPuppyCam.lastTargetFloorHeight = gMarioState->pos[1];
     gPuppyCam.opacity = 255;
     gPuppyCam.swimPitch = 0;
+    gPuppyCam.framesSinceC[0] = 10; //This just exists to stop input type B being stupid.
+    gPuppyCam.framesSinceC[1] = 10; //This just exists to stop input type B being stupid.
 
 }
 
@@ -879,6 +881,15 @@ void find_surface_on_ray(Vec3f orig, Vec3f dir, struct Surface **hit_surface, Ve
     }
 }
 
+const struct sPuppyAngles puppyAnglesNull =
+{
+    {PUPPY_NULL, PUPPY_NULL, PUPPY_NULL},
+    {PUPPY_NULL, PUPPY_NULL, PUPPY_NULL},
+    {PUPPY_NULL},
+    {PUPPY_NULL},
+    {PUPPY_NULL},
+};
+
 //Checks the bounding box of a puppycam volume. If it's inside, then set the pointer to the current index.
 static s32 puppycam_check_volume_bounds(struct sPuppyVolume *volume, s32 index)
 {
@@ -1036,7 +1047,7 @@ void puppycam_shake(s16 x, s16 y, s16 z)
 static void puppycam_input_core(void)
 {
     f32 ivY = ((gPuppyCam.options.invertY*2)-1)*(gPuppyCam.options.sensitivityY/100.f);
-    s8 stickMag = 0;
+    s32 stickMag = 0;
     s32 moveFlagAdd = 0;
 
     puppycam_analogue_stick();
@@ -1106,7 +1117,6 @@ static void puppycam_projection(void)
 {
     Vec3s targetPos, targetPos2, targetPos3;
     s16 pitchTotal;
-    f32 dist;
     s32 panD = (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_PANSHIFT)/8192;
 
     puppycam_projection_behaviours();
@@ -1305,7 +1315,7 @@ static void puppycam_apply(void)
 //The basic loop sequence, which is called outside.
 void puppycam_loop(void)
 {
-    if (!gPuppyCam.cutscene)
+    if (!gPuppyCam.cutscene && sDelayedWarpOp == 0)
     {
         puppycam_input_core();
         puppycam_projection();
@@ -1316,6 +1326,7 @@ void puppycam_loop(void)
             gPuppyCam.opacity = 255;
     }
     else
+    if (gPuppyCam.cutscene)
     {
         gPuppyCam.opacity = 255;
         newcam_process_cutscene();
