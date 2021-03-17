@@ -1244,7 +1244,7 @@ static void puppycam_collision(void)
         return;
 
     target[0] = gPuppyCam.targetObj->oPosX;
-    target[1] = gPuppyCam.targetObj->oPosY + gPuppyCam.povHeight;
+    target[1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight*0.75f);
     target[2] = gPuppyCam.targetObj->oPosZ;
 
     camdir[0] = LENSIN(LENSIN(gPuppyCam.zoomTarget,pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[0];
