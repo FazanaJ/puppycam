@@ -150,6 +150,18 @@ void puppycam_boot(void)
     puppycam_get_save();
 }
 
+//Called when an instant warp is done.
+void puppycam_warp(f32 displacementX, f32 displacementY, f32 displacementZ)
+{
+    gPuppyCam.pos[0] += displacementX;
+    gPuppyCam.pos[1] += displacementY;
+    gPuppyCam.pos[2] += displacementZ;
+    gPuppyCam.targetFloorHeight += displacementY;
+    gPuppyCam.lastTargetFloorHeight += displacementY;
+    gPuppyCam.floorY[0] += displacementY;
+    gPuppyCam.floorY[1] += displacementY;
+}
+
 #if defined(VERSION_EU)
 static void newcam_set_language(void)
 {
@@ -448,7 +460,7 @@ void puppycam_init(void)
     gPuppyCam.focus[1] = 0;
     gPuppyCam.focus[2] = 0;
     gPuppyCam.pan[0] = 0;
-    gPuppyCam.pan[1] = 0;//gMarioState->pos[1];
+    gPuppyCam.pan[1] = 0; //gMarioState->pos[1];
     gPuppyCam.pan[2] = 0;
     gPuppyCam.posHeight[0] = 0;
     gPuppyCam.posHeight[1] = 0;
@@ -1256,37 +1268,61 @@ static void puppycam_script(void)
 //Handles collision detection using ray casting.
 static void puppycam_collision(void)
 {
-    struct Surface *surf;
-    Vec3f camdir;
-    Vec3f hitpos;
-    Vec3f target;
+    struct Surface *surf[2];
+    Vec3f camdir[2];
+    Vec3f hitpos[2];
+    Vec3f target[2];
     s16 pitchTotal = CLAMP(gPuppyCam.pitch+(gPuppyCam.swimPitch*10), 800, 0x7800);
+    s32 dist[2];
 
     if (gPuppyCam.targetObj == NULL)
         return;
 
-    target[0] = gPuppyCam.targetObj->oPosX;
-    target[1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight);
-    target[2] = gPuppyCam.targetObj->oPosZ;
+    //The ray, starting from the top
+    target[0][0] = gPuppyCam.targetObj->oPosX;
+    target[0][1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight) - gPuppyCam.floorY[0];
+    target[0][2] = gPuppyCam.targetObj->oPosZ;
+    //The ray, starting from the bottom
+    target[1][0] = gPuppyCam.targetObj->oPosX;
+    target[1][1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight *0.1f) - gPuppyCam.floorY[0];
+    target[1][2] = gPuppyCam.targetObj->oPosZ;
 
-    camdir[0] = LENSIN(LENSIN(gPuppyCam.zoomTarget,pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[0];
-    camdir[1] = LENCOS(gPuppyCam.zoomTarget,pitchTotal) + gPuppyCam.shake[1] - gPuppyCam.floorY[1];// + gPuppyCam.posHeight[1];
-    camdir[2] = LENCOS(LENSIN(gPuppyCam.zoomTarget,pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[2];
+    camdir[0][0] = LENSIN(LENSIN(gPuppyCam.zoomTarget,pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[0];
+    camdir[0][1] = LENCOS(gPuppyCam.zoomTarget,pitchTotal) + gPuppyCam.shake[1];// + gPuppyCam.posHeight[1];
+    camdir[0][2] = LENCOS(LENSIN(gPuppyCam.zoomTarget,pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[2];
 
-    find_surface_on_ray(target, camdir, &surf, &hitpos);
-    gPuppyCam.collisionDistance = sqrtf((target[0] - hitpos[0]) * (target[0] - hitpos[0]) + (target[1] - hitpos[1]) * (target[1] - hitpos[1]) + (target[2] - hitpos[2]) * (target[2] - hitpos[2]));
+    camdir[1][0] = camdir[0][0];
+    camdir[1][1] = camdir[0][1];
+    camdir[1][2] = camdir[0][2];
 
-    if (surf)
+    find_surface_on_ray(target[0], camdir[0], &surf[0], &hitpos[0]);
+    find_surface_on_ray(target[1], camdir[1], &surf[1], &hitpos[1]);
+    dist[0] = ((target[0][0] - hitpos[0][0]) * (target[0][0] - hitpos[0][0]) + (target[0][1] - hitpos[0][1]) * (target[0][1] - hitpos[0][1]) + (target[0][2] - hitpos[0][2]) * (target[0][2] - hitpos[0][2]));
+    dist[1] = ((target[1][0] - hitpos[1][0]) * (target[1][0] - hitpos[1][0]) + (target[1][1] - hitpos[1][1]) * (target[1][1] - hitpos[1][1]) + (target[1][2] - hitpos[1][2]) * (target[1][2] - hitpos[1][2]));
+
+    gPuppyCam.collisionDistance = gPuppyCam.zoomTarget;
+
+    if (surf[0] && surf[1])
     {
+        gPuppyCam.collisionDistance = sqrtf(MAX(dist[0], dist[1]));
         if (gPuppyCam.zoom > gPuppyCam.collisionDistance)
         {
-        gPuppyCam.zoom = gPuppyCam.collisionDistance;
-        if (gPuppyCam.zoom - gPuppyCam.zoomTarget < 5)
-        {
-            gPuppyCam.pos[0] = hitpos[0];
-            gPuppyCam.pos[1] = hitpos[1];
-            gPuppyCam.pos[2] = hitpos[2];
-        }
+            gPuppyCam.zoom = MIN(gPuppyCam.collisionDistance, gPuppyCam.zoomTarget);
+            if (gPuppyCam.zoom - gPuppyCam.zoomTarget < 5)
+            {
+                if (dist[0] >= dist[1])
+                {
+                    gPuppyCam.pos[0] = hitpos[0][0];
+                    gPuppyCam.pos[1] = hitpos[0][1];
+                    gPuppyCam.pos[2] = hitpos[0][2];
+                }
+                else
+                {
+                    gPuppyCam.pos[0] = hitpos[1][0];
+                    gPuppyCam.pos[1] = hitpos[1][1] + (gPuppyCam.povHeight*0.9f);
+                    gPuppyCam.pos[2] = hitpos[1][2];
+                }
+            }
         }
     }
 

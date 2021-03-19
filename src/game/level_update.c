@@ -620,6 +620,7 @@ s16 music_changed_through_warp(s16 arg) {
  * Set the current warp type and destination level/area/node.
  */
 void initiate_warp(s16 destLevel, s16 destArea, s16 destWarpNode, s32 arg3) {
+    s32 i = 0;
     if (destWarpNode >= WARP_NODE_CREDITS_MIN) {
         sWarpDest.type = WARP_TYPE_CHANGE_LEVEL;
     } else if (destLevel != gCurrLevelNum) {
@@ -634,6 +635,15 @@ void initiate_warp(s16 destLevel, s16 destArea, s16 destWarpNode, s32 arg3) {
     sWarpDest.areaIdx = destArea;
     sWarpDest.nodeId = destWarpNode;
     sWarpDest.arg = arg3;
+
+    if (sWarpDest.type != WARP_TYPE_SAME_AREA)
+    {
+        for (i = 0; i < gPuppyVolumeCount; i++)
+        {
+            mem_pool_free(gPuppyMemoryPool, sPuppyVolumeStack[i]);
+        }
+        gPuppyVolumeCount = 0;
+    }
 }
 
 // From Surface 0xD3 to 0xFC
