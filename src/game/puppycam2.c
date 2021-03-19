@@ -1280,11 +1280,11 @@ static void puppycam_collision(void)
 
     //The ray, starting from the top
     target[0][0] = gPuppyCam.targetObj->oPosX;
-    target[0][1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight) - gPuppyCam.floorY[0];
+    target[0][1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight) - CLAMP(gPuppyCam.targetObj->oPosY - gPuppyCam.targetFloorHeight, 0, 300);
     target[0][2] = gPuppyCam.targetObj->oPosZ;
     //The ray, starting from the bottom
     target[1][0] = gPuppyCam.targetObj->oPosX;
-    target[1][1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight *0.4f) - gPuppyCam.floorY[0];
+    target[1][1] = gPuppyCam.targetObj->oPosY + (gPuppyCam.povHeight *0.4f) - CLAMP(gPuppyCam.targetObj->oPosY - gPuppyCam.targetFloorHeight, 0, 300);
     target[1][2] = gPuppyCam.targetObj->oPosZ;
 
     camdir[0][0] = LENSIN(LENSIN(gPuppyCam.zoomTarget,pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[0];
