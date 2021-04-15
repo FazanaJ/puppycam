@@ -1358,6 +1358,7 @@ static void puppycam_apply(void)
 
     gLakituState.mode = gCamera->mode;
     gLakituState.defMode = gCamera->defMode;
+    gLakituState.roll = approach_s32(gLakituState.roll, 0, 0x80, 0x80);
 }
 
 //The basic loop sequence, which is called outside.
