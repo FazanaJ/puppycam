@@ -12,15 +12,16 @@
 #define NC_CAMC_EN 				_("Camera Centre Speed")
 #define NC_ANALOGUE_EN			_("Analogue Camera")
 #define NC_SCHEME_EN			_("Control Scheme")
-#define OPTION_ENABLED_EN _("Enabled")
-#define OPTION_DISABLED_EN _("Disabled")
-#define OPTION_SCHEME1_EN _("Double Tap")
-#define OPTION_SCHEME2_EN _("Single Press")
+#define OPTION_ENABLED_EN 		_("Enabled")
+#define OPTION_DISABLED_EN 		_("Disabled")
+#define OPTION_SCHEME1_EN 		_("Double Tap")
+#define OPTION_SCHEME2_EN 		_("Single Press")
+#define OPTION_SCHEME3_EN 		_("Classic")
 #define NC_HIGHLIGHT_L 			_(">")
 #define NC_HIGHLIGHT_R 			_("<")
-#define NC_BUTTON_EN 				_("[R]: Options")
-#define NC_BUTTON2_EN 				_("[R]: Return")
-#define NC_OPTION_EN 				_("PUPPYCAM OPTIONS")
+#define NC_BUTTON_EN 			_("[R]: Options")
+#define NC_BUTTON2_EN 			_("[R]: Return")
+#define NC_OPTION_EN 			_("PUPPYCAM OPTIONS")
 
 
 #if defined(VERSION_EU)
@@ -53,6 +54,9 @@
 
 #define OPTION_SCHEME2_FR _("Single Press")
 #define OPTION_SCHEME2_DE _("Single Press")
+
+#define OPTION_SCHEME3_FR _("Classic")
+#define OPTION_SCHEME3_DE _("Classic")
 
 #define NC_BUTTON_FR 				_("[R]: Options")
 #define NC_BUTTON_DE 				_("[R]: Options")
