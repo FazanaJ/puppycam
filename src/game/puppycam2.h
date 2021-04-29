@@ -78,6 +78,7 @@ struct gPuppyStruct
     s16 swimPitch;
     u8 mode3Flags;
     u8 moveFlagAdd;
+    s16 targetDist[2];
 
     u8 cutscene; //A boolean that decides whether a cutscene is active
     s32 (*sceneFunc)();

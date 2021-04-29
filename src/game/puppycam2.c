@@ -1271,7 +1271,6 @@ static void puppycam_input_core(void)
 static void puppycam_projection(void)
 {
     Vec3s targetPos, targetPos2, targetPos3;
-    s32 targetDist[2] = {0, 0};
     s16 pitchTotal;
     s32 panD = (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_PANSHIFT)/8192;
 
@@ -1295,25 +1294,29 @@ static void puppycam_projection(void)
             targetPos3[0] = (s16)approach_f32_asymptotic(targetPos[0], targetPos2[0], 0.5f);
             targetPos3[1] = (s16)approach_f32_asymptotic(targetPos[1], targetPos2[1], 0.5f);
             targetPos3[2] = (s16)approach_f32_asymptotic(targetPos[2], targetPos2[2], 0.5f);
-            targetDist[0] = approach_f32_asymptotic(targetDist[0],(ABS(LENCOS(sqrtf(((targetPos[0]-targetPos2[0])*(targetPos[0]-targetPos2[0]))+((targetPos[2]-targetPos2[2])*(targetPos[2]-targetPos2[2]))),
+            gPuppyCam.targetDist[0] = approach_f32_asymptotic(gPuppyCam.targetDist[0],(ABS(LENCOS(sqrtf(((targetPos[0]-targetPos2[0])*(targetPos[0]-targetPos2[0]))+((targetPos[2]-targetPos2[2])*(targetPos[2]-targetPos2[2]))),
                             (s16)ABS(((gPuppyCam.yaw + 0x8000) % 0xFFFF - 0x8000) - (atan2s(targetPos[2]-targetPos2[2], targetPos[0]-targetPos2[0])) % 0xFFFF - 0x8000)+0x4000))), 0.2f);
         }
 
-        targetDist[1] = targetDist[0] + gPuppyCam.zoom;
+        gPuppyCam.targetDist[1] = gPuppyCam.targetDist[0] + gPuppyCam.zoom;
 
         if (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_X_MOVEMENT)
-            gPuppyCam.focus[0] = targetPos3[0] + gPuppyCam.shake[0] + (gPuppyCam.pan[0]*targetDist[1]/gPuppyCam.zoomPoints[2])*panD;
+            gPuppyCam.focus[0] = targetPos3[0] + gPuppyCam.shake[0] + (gPuppyCam.pan[0]*gPuppyCam.targetDist[1]/gPuppyCam.zoomPoints[2])*panD;
         if (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_Y_MOVEMENT)
-            gPuppyCam.focus[1] = targetPos3[1] + gPuppyCam.shake[1] + (gPuppyCam.pan[1]*targetDist[1]/gPuppyCam.zoomPoints[2]) + gPuppyCam.povHeight - gPuppyCam.floorY[0] + gPuppyCam.posHeight[0] + (gPuppyCam.swimPitch/10);
+            gPuppyCam.focus[1] = targetPos3[1] + gPuppyCam.shake[1] + (gPuppyCam.pan[1]*gPuppyCam.targetDist[1]/gPuppyCam.zoomPoints[2]) + gPuppyCam.povHeight - gPuppyCam.floorY[0] + gPuppyCam.posHeight[0] + (gPuppyCam.swimPitch/10);
         if (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_Z_MOVEMENT)
-            gPuppyCam.focus[2] = targetPos3[2] + gPuppyCam.shake[2] + (gPuppyCam.pan[2]*targetDist[1]/gPuppyCam.zoomPoints[2])*panD;
+            gPuppyCam.focus[2] = targetPos3[2] + gPuppyCam.shake[2] + (gPuppyCam.pan[2]*gPuppyCam.targetDist[1]/gPuppyCam.zoomPoints[2])*panD;
 
         if (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_X_MOVEMENT)
-            gPuppyCam.pos[0] = gPuppyCam.targetObj->oPosX + LENSIN(LENSIN(targetDist[1],pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[0];
+            gPuppyCam.pos[0] = gPuppyCam.targetObj->oPosX + LENSIN(LENSIN(gPuppyCam.targetDist[1],pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[0];
         if (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_Y_MOVEMENT)
-            gPuppyCam.pos[1] = gPuppyCam.targetObj->oPosY + gPuppyCam.povHeight + LENCOS(targetDist[1],pitchTotal) + gPuppyCam.shake[1] - gPuppyCam.floorY[1] + gPuppyCam.posHeight[1];
+            gPuppyCam.pos[1] = gPuppyCam.targetObj->oPosY + gPuppyCam.povHeight + LENCOS(gPuppyCam.targetDist[1],pitchTotal) + gPuppyCam.shake[1] - gPuppyCam.floorY[1] + gPuppyCam.posHeight[1];
         if (gPuppyCam.flags & PUPPYCAM_BEHAVIOUR_Z_MOVEMENT)
-            gPuppyCam.pos[2] = gPuppyCam.targetObj->oPosZ + LENCOS(LENSIN(targetDist[1],pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[2];
+            gPuppyCam.pos[2] = gPuppyCam.targetObj->oPosZ + LENCOS(LENSIN(gPuppyCam.targetDist[1],pitchTotal),gPuppyCam.yaw) + gPuppyCam.shake[2];
+    }
+    else
+    {
+        gPuppyCam.targetDist[0] = approach_f32_asymptotic(gPuppyCam.targetDist[0], 0, 0.2f);
     }
 
 }
