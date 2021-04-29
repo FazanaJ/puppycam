@@ -796,8 +796,8 @@ static void puppycam_view_panning(void)
         if (gMarioState->action & ACT_FLAG_BUTT_OR_STOMACH_SLIDE)
             slideSpeed = 10;
 
-        gPuppyCam.pan[0] = approach_f32_asymptotic(gPuppyCam.pan[0], LENSIN(panEx+(500*(gMarioState->forwardVel/32.f)), gMarioState->faceAngle[1])*panMulti, 0.02f*slideSpeed);
-        gPuppyCam.pan[2] = approach_f32_asymptotic(gPuppyCam.pan[2], LENCOS(panEx+(500*(gMarioState->forwardVel/32.f)), gMarioState->faceAngle[1])*panMulti, 0.02f*slideSpeed);
+        gPuppyCam.pan[0] = approach_f32_asymptotic(gPuppyCam.pan[0], LENSIN(panEx+(200*(gMarioState->forwardVel/32.f)), gMarioState->faceAngle[1])*panMulti, 0.02f*slideSpeed);
+        gPuppyCam.pan[2] = approach_f32_asymptotic(gPuppyCam.pan[2], LENCOS(panEx+(200*(gMarioState->forwardVel/32.f)), gMarioState->faceAngle[1])*panMulti, 0.02f*slideSpeed);
         if (gMarioState->vel[1] == 0.0f)
         {
             panFloor = CLAMP(find_floor_height((s16)(gPuppyCam.targetObj->oPosX+gPuppyCam.pan[0]),(s16)(gPuppyCam.targetObj->oPosY + 200),
@@ -1295,12 +1295,8 @@ static void puppycam_projection(void)
             targetPos3[0] = (s16)approach_f32_asymptotic(targetPos[0], targetPos2[0], 0.5f);
             targetPos3[1] = (s16)approach_f32_asymptotic(targetPos[1], targetPos2[1], 0.5f);
             targetPos3[2] = (s16)approach_f32_asymptotic(targetPos[2], targetPos2[2], 0.5f);
-            targetDist[0] = ABS(LENCOS(sqrtf(((targetPos[0]-targetPos2[0])*(targetPos[0]-targetPos2[0]))+((targetPos[2]-targetPos2[2])*(targetPos[2]-targetPos2[2]))),
-                            (s16)ABS(((gPuppyCam.yaw + 0x8000) % 0xFFFF - 0x8000) - (atan2s(targetPos[2]-targetPos2[2], targetPos[0]-targetPos2[0])) % 0xFFFF - 0x8000)+0x4000));
-        }
-        else
-        {
-            targetDist[0] = 0;
+            targetDist[0] = approach_f32_asymptotic(targetDist[0],(ABS(LENCOS(sqrtf(((targetPos[0]-targetPos2[0])*(targetPos[0]-targetPos2[0]))+((targetPos[2]-targetPos2[2])*(targetPos[2]-targetPos2[2]))),
+                            (s16)ABS(((gPuppyCam.yaw + 0x8000) % 0xFFFF - 0x8000) - (atan2s(targetPos[2]-targetPos2[2], targetPos[0]-targetPos2[0])) % 0xFFFF - 0x8000)+0x4000))), 0.2f);
         }
 
         targetDist[1] = targetDist[0] + gPuppyCam.zoom;
